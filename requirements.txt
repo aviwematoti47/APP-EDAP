@@ -1,3 +1,3 @@
-matplotlob
+matplotlib
 numpy
 streamlit
