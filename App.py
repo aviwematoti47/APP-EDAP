@@ -135,6 +135,8 @@ if st.button("Run Simulation"):
         visual_plot.pyplot(fig)
 
     st.write("Simulation Complete.")
+
+    
 st.markdown(
     """
     ## Employee Productivity and Performance Influence Simulation
