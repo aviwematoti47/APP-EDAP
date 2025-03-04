@@ -172,3 +172,4 @@ st.markdown(
 
     Adjust the parameters on the sidebar and run the simulation to see how influence dynamics play out in your organization!
     """
+)
