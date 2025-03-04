@@ -154,11 +154,6 @@ st.markdown(
     - The **retention rate** affects the likelihood that engaged employees stay productive.
     - The **influence score** measures how strongly an employee can impact others based on their connections.
 
-    ### Parameters you can adjust:
-    - **Number of Employees (Agents)**: Total number of people in the organization.
-    - **Initial High Performers**: How many start as high performers.
-    - **Influence Probability**: How likely high performance spreads between connected employees.
-    - **Experiment Duration**: How long the simulation runs.
 
     ### Visualizations:
     - **Network Graph** (Top-Left): See how employees influence each other in real-time.
