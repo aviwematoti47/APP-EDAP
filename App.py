@@ -11,45 +11,44 @@ def get_model_params():
         "N": st.sidebar.slider("Number of Employees", 50, 500, 100),
         "initial_high_performers": st.sidebar.slider("Initial High Performers", 1, 10, 3),
         "influence_probability": st.sidebar.slider("Influence Probability", 0.0, 1.0, 0.5),
+        "retention_rate": st.sidebar.slider("Retention Rate", 0.0, 1.0, 0.7),
         "steps": st.sidebar.slider("Simulation Duration (Seconds)", 5, 100, 50),
     }
 
+# Moving Average for smoothing
 def moving_average(data, window_size=10):
     if len(data) < window_size:
         return data
     return np.convolve(data, np.ones(window_size)/window_size, mode='valid')
 
+# Employee class
 class Employee:
-    def __init__(self, unique_id, status, capacity):
+    def __init__(self, unique_id, status, influence_score):
         self.unique_id = unique_id
-        self.status = status  # "high_performer", "neutral", "engaged", "disengaged"
-        self.capacity = capacity  # Determines influence susceptibility
-        self.influence_timer = 0
-        self.engagement_timer = 0
+        self.status = status  # "high_performer", "neutral", "disengaged"
+        self.influence_score = influence_score
 
-    def interact(self, colleagues, influence_probability):
+    def influence(self, neighbors, influence_probability):
         if self.status == "high_performer":
-            for colleague in colleagues:
-                if colleague.status == "neutral":
-                    susceptibility_factor = 1.0 / colleague.capacity
-                    if random.random() < (influence_probability * susceptibility_factor):
-                        colleague.influence_timer = self.capacity
+            for neighbor in neighbors:
+                if neighbor.status == "neutral":
+                    if random.random() < (influence_probability * self.influence_score):
+                        neighbor.status = "high_performer"
+                elif neighbor.status == "disengaged":
+                    if random.random() < (influence_probability * self.influence_score * 0.5):
+                        neighbor.status = "neutral"
+        elif self.status == "disengaged":
+            for neighbor in neighbors:
+                if neighbor.status == "neutral":
+                    if random.random() < (influence_probability * 0.3):
+                        neighbor.status = "disengaged"
 
-    def update_status(self):
-        if self.status == "neutral" and self.influence_timer > 0:
-            self.influence_timer -= 1
-            if self.influence_timer == 0:
-                self.status = "high_performer"
-                self.engagement_timer = 3
-        elif self.status == "high_performer" and self.engagement_timer > 0:
-            self.engagement_timer -= 1
-            if self.engagement_timer == 0:
-                self.status = "engaged" if random.random() > 0.5 else "disengaged"
-
-class PerformanceInfluenceModel:
+# Organization Model
+class OrganizationModel:
     def __init__(self, **params):
         self.num_employees = params["N"]
         self.influence_probability = params["influence_probability"]
+        self.retention_rate = params["retention_rate"]
         self.G = nx.barabasi_albert_graph(self.num_employees, 3)
         self.employees = {}
 
@@ -57,81 +56,78 @@ class PerformanceInfluenceModel:
         initial_high_performers = random.sample(all_nodes, params["initial_high_performers"])
 
         for node in all_nodes:
-            capacity = random.choice([1, 2, 3, 4])
+            influence_score = random.uniform(0.5, 1.5)
             status = "high_performer" if node in initial_high_performers else "neutral"
-            self.employees[node] = Employee(node, status, capacity)
+            self.employees[node] = Employee(node, status, influence_score)
 
         self.node_positions = nx.spring_layout(self.G)
-        self.history = []
-        self.influence_counts = []
-        self.engaged_counts = []
+        self.high_performer_counts = []
         self.disengaged_counts = []
 
-    def step(self, step_num):
-        influences = 0
-        newly_engaged = 0
-        newly_disengaged = 0
-
+    def step(self):
         for node, employee in self.employees.items():
-            colleagues = [self.employees[n] for n in self.G.neighbors(node)]
-            employee.interact(colleagues, self.influence_probability)
+            neighbors = [self.employees[n] for n in self.G.neighbors(node)]
+            employee.influence(neighbors, self.influence_probability)
 
         for employee in self.employees.values():
-            prev_status = employee.status
-            employee.update_status()
-            if prev_status == "neutral" and employee.status == "high_performer":
-                influences += 1
-            elif prev_status == "high_performer" and employee.status == "engaged":
-                newly_engaged += 1
-            elif prev_status == "high_performer" and employee.status == "disengaged":
-                newly_disengaged += 1
+            if employee.status == "high_performer":
+                if random.random() > self.retention_rate:
+                    employee.status = "disengaged"
 
-        self.influence_counts.append(influences)
-        self.engaged_counts.append(newly_engaged)
-        self.disengaged_counts.append(newly_disengaged)
-        self.history.append({node: employee.status for node, employee in self.employees.items()})
+        high_performers = sum(1 for e in self.employees.values() if e.status == "high_performer")
+        disengaged = sum(1 for e in self.employees.values() if e.status == "disengaged")
 
-def plot_visuals(G, employees, positions, influences, engaged_counts, disengaged_counts):
-    color_map = {"high_performer": "gold", "neutral": "gray", "engaged": "green", "disengaged": "red"}
+        self.high_performer_counts.append(high_performers)
+        self.disengaged_counts.append(disengaged)
+
+# Visualization
+def plot_organization(G, employees, positions, high_performer_counts, disengaged_counts):
+    color_map = {"high_performer": "green", "neutral": "gray", "disengaged": "red"}
     node_colors = [color_map[employees[node].status] for node in G.nodes()]
-    node_sizes = [employees[node].capacity * 50 for node in G.nodes()]
+    node_sizes = [employees[node].influence_score * 100 for node in G.nodes()]
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
-    nx.draw(G, pos=positions, ax=axes[0, 0], node_color=node_colors, with_labels=False, node_size=node_sizes, edge_color="gray")
-    axes[0, 0].set_title("Employee Influence Network")
+    nx.draw(G, pos=positions, ax=axes[0], node_color=node_colors, node_size=node_sizes, edge_color="lightgray")
+    axes[0].set_title("Employee Influence Network")
 
-    axes[0, 1].plot(moving_average(influences), color="gold", linewidth=1.5)
-    axes[0, 1].set_title("Influence Spread Over Time")
-    axes[0, 1].set_xlabel("Time (Seconds)")
-    axes[0, 1].set_ylabel("New Influences per Step")
-
-    axes[1, 0].plot(moving_average(engaged_counts), color="green", linewidth=1.5)
-    axes[1, 0].set_title("New Engaged Per Step")
-    axes[1, 0].set_xlabel("Time (Seconds)")
-    axes[1, 0].set_ylabel("Engaged Count Per Step")
-
-    axes[1, 1].plot(moving_average(disengaged_counts), color="red", linewidth=1.5)
-    axes[1, 1].set_title("New Disengaged Per Step")
-    axes[1, 1].set_xlabel("Time (Seconds)")
-    axes[1, 1].set_ylabel("Disengaged Count Per Step")
+    axes[1].plot(moving_average(high_performer_counts), color="green", label="High Performers")
+    axes[1].plot(moving_average(disengaged_counts), color="red", label="Disengaged")
+    axes[1].set_title("Performance Over Time")
+    axes[1].set_xlabel("Time (Steps)")
+    axes[1].set_ylabel("Number of Employees")
+    axes[1].legend()
 
     plt.tight_layout()
     return fig
 
+# Streamlit App
 st.title("Employee Productivity and Performance Influence Simulation")
 params = get_model_params()
 
 if st.button("Run Simulation"):
-    st.markdown("<script>window.scrollTo(0, document.body.scrollHeight);</script>", unsafe_allow_html=True)
-    model = PerformanceInfluenceModel(**params)
+    model = OrganizationModel(**params)
     progress_bar = st.progress(0)
     visual_plot = st.empty()
 
     for step_num in range(1, params["steps"] + 1):
-        model.step(step_num)
+        model.step()
         progress_bar.progress(step_num / params["steps"])
-        fig = plot_visuals(model.G, model.employees, model.node_positions, model.influence_counts, model.engaged_counts, model.disengaged_counts)
+        fig = plot_organization(model.G, model.employees, model.node_positions, model.high_performer_counts, model.disengaged_counts)
         visual_plot.pyplot(fig)
 
-    st.write("Simulation Complete.")
+    st.success("Simulation Complete.")
+
+st.markdown(
+    """
+    ### Employee Productivity and Performance Influence Simulation
+
+    This simulation explores how employee performance evolves through mentorship and influence in an organization.
+    
+    - **Green:** High-performing employees
+    - **Gray:** Neutral employees
+    - **Red:** Disengaged employees
+
+    Adjust parameters like influence probability and retention rate to observe organizational dynamics.
+    """
+)
