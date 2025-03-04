@@ -151,8 +151,7 @@ st.markdown(
     - After a period of high performance, employees either:
         - Remain **engaged and productive (green nodes)** or
         - Become **disengaged (blue nodes)** due to factors like burnout or negative culture.
-    - The **retention rate** affects the likelihood that engaged employees stay productive.
-    - The **influence score** measures how strongly an employee can impact others based on their connections.
+
 
 
     ### Visualizations:
