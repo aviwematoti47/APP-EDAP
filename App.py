@@ -160,7 +160,7 @@ st.markdown(
     - **Disengaged Employees Over Time** (Bottom-Right): Number of employees losing engagement.
 
     ### Purpose:
-    This model helps explore how ** influence, engagement and disengagement** spread through an organization, 
+    This model helps explore how **influence, engagement and disengagement** spread through an organization, 
     providing insights into how workplace culture and performance may evolve over time.
 
     """
