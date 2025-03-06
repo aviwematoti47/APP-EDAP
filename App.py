@@ -103,17 +103,17 @@ def plot_visuals(G, employees, positions, influences, engaged_counts, disengaged
 
     axes[0, 1].plot(moving_average(influences), color="gold", linewidth=1.5)
     axes[0, 1].set_title("Influence Spread Over Time")
-    axes[0, 1].set_xlabel("Time (Seconds)")
+    axes[0, 1].set_xlabel("Time (Days)")
     axes[0, 1].set_ylabel("New Influences per Step")
 
     axes[1, 0].plot(moving_average(engaged_counts), color="green", linewidth=1.5)
     axes[1, 0].set_title("New Engaged Per Step")
-    axes[1, 0].set_xlabel("Time (Seconds)")
+    axes[1, 0].set_xlabel("Time (Days)")
     axes[1, 0].set_ylabel("Engaged Count Per Step")
 
     axes[1, 1].plot(moving_average(disengaged_counts), color="red", linewidth=1.5)
     axes[1, 1].set_title("New Disengaged Per Step")
-    axes[1, 1].set_xlabel("Time (Seconds)")
+    axes[1, 1].set_xlabel("Time (Days)")
     axes[1, 1].set_ylabel("Disengaged Count Per Step")
 
     plt.tight_layout()
