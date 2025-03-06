@@ -11,7 +11,7 @@ def get_model_params():
         "N": st.sidebar.slider("Number of Employees", 50, 500, 100),
         "initial_high_performers": st.sidebar.slider("Initial High Performers", 1, 30, 3),
         "influence_probability": st.sidebar.slider("Influence Probability", 0.0, 1.0, 0.5),
-        "steps": st.sidebar.slider("Simulation Duration (Seconds)", 5, 100, 50),
+        "steps": st.sidebar.slider("Simulation Duration (Days)", 5, 100, 50),
     }
 
 def moving_average(data, window_size=10):
