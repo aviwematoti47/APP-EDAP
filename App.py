@@ -151,7 +151,7 @@ st.markdown(
     - **Neutral employees (gray nodes)** can become high performers through peer influence.
     - After a period of high performance, employees either:
         - Remain **engaged and productive (green nodes)** or
-        - Become **disengaged (blue nodes)** due to factors like burnout or negative culture.
+        - Become **disengaged (red nodes)** due to factors like burnout or negative culture.
 
     ### Visualizations:
     - **Network Graph** (Top-Left): See how employees influence each other in real-time.
