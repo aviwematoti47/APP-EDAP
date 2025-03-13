@@ -3,5 +3,5 @@ streamlit
 numpy
 pandas
 yfinance
-matplotlib.pyplot
 scikit-learn
+matplotlib.pyplot
