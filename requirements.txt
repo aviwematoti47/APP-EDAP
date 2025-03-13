@@ -1,4 +1,5 @@
-matplotlib
-numpy
+#Create a requirements file for streamlit
 streamlit
-networkx
+numpy
+pandas
+scikit-learn
